@@ -30,10 +30,14 @@ def extract_text_from_image(i, file):
     # process each image to make text more readable
     greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     noise = cv2.medianBlur(greyscale, 3)
-    final = cv2.threshold(noise, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-    cv2.imwrite(r"C:\Users\Beth\OneDrive - Amey plc\Documents\Be Digital\New folder\ImageToText-Assistant\app\processed_images\img_"+str(i)+".png", final)
+    thresh = cv2.threshold(greyscale, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+    # Perform dilation and erosion to remove some noise 
+    kernel = np.ones((1, 1), np.uint8) 
+    dilate = cv2.dilate(greyscale, kernel, iterations=1) 
+    erode = cv2.erode(dilate, kernel, iterations=1) 
+    cv2.imwrite(r"C:\Users\Beth\OneDrive - Amey plc\Documents\Be Digital\New folder\ImageToText-Assistant\app\processed_images\img_"+str(i)+".png", thresh)
 
-    image_text = pytesseract.image_to_string(final, config='--psm 12 --oem 3')
+    image_text = pytesseract.image_to_string(thresh, config='--psm 12 --oem 3')# -c tessedit_char_whitelist=01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ')
 
     # replace any white spaces with one space 
     image_text = re.sub(r'\s+', ' ', image_text)
