@@ -16,10 +16,10 @@ import image_to_text as itt
 
 # page design
 
-st.set_page_config(page_title="ImageToText Assisstant")
+st.set_page_config(page_title="ImageToText Assistant")
 
 with st.sidebar:
-    st.header('ImageToText Assisstant')
+    st.header('ImageToText Assistant')
     st.subheader('Extract text from your images.')
     st.markdown('''
     # About
@@ -36,10 +36,7 @@ if 'image_info' not in st.session_state:
 upload = st.file_uploader("Please upload one or more images.", type=["png", "jpg"], accept_multiple_files=True)
 
 if upload is not None:
-    n_images = len(upload)
     for i, image in enumerate(upload):
-        #bytes_data = image.getvalue()
-        #st.write(bytes_data)
         extracted_text = itt.extract_text_from_image(i, image)
         print(extracted_text)
         word_count, char_count, char_count_no_spaces = itt.calculate_word_and_char_count(extracted_text)

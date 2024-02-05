@@ -24,20 +24,24 @@ def extract_text_from_image(i, file):
     Given a file path, process the image at the file location and extract text
     """
     # save file locally
-    img = Image.open(file) #io.BytesIO(file)
+    img = Image.open(file).convert("RGB")
     img = np.array(img)
     #img = cv2.imread(img)
-    # process each image to make text more readable
-    greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    noise = cv2.medianBlur(greyscale, 3)
-    thresh = cv2.threshold(greyscale, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-    # Perform dilation and erosion to remove some noise 
-    kernel = np.ones((1, 1), np.uint8) 
-    dilate = cv2.dilate(greyscale, kernel, iterations=1) 
-    erode = cv2.erode(dilate, kernel, iterations=1) 
-    cv2.imwrite(r"C:\Users\Beth\OneDrive - Amey plc\Documents\Be Digital\New folder\ImageToText-Assistant\app\processed_images\img_"+str(i)+".png", thresh)
+    cv2.imwrite(r"C:\Users\Beth\OneDrive - Amey plc\Documents\Be Digital\New folder\ImageToText-Assistant\app\uploaded_images\img_"+str(i)+".png", img)
 
-    image_text = pytesseract.image_to_string(thresh, config='--psm 12 --oem 3')# -c tessedit_char_whitelist=01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ')
+    # process each image to make text more readable
+    # convert to greyscale (has to be thresholding)
+    greyscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Improve contrast (helps with light coloured text)
+    # Create a CLAHE object
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    # Apply CLAHE
+    clahe_image = clahe.apply(greyscale)
+    # Convert to black and white
+    ret, thresh = cv2.threshold(clahe_image, 127, 255, cv2.THRESH_BINARY)
+
+    cv2.imwrite(r"C:\Users\Beth\OneDrive - Amey plc\Documents\Be Digital\New folder\ImageToText-Assistant\app\processed_images\img_"+str(i)+".png", clahe_image)
+    image_text = pytesseract.image_to_string(clahe_image, config='--psm 11')# -c tessedit_char_whitelist=01234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ')
 
     # replace any white spaces with one space 
     image_text = re.sub(r'\s+', ' ', image_text)
